@@ -1,0 +1,37 @@
+{
+  "name": "lanadoc-cli",
+  "version": "0.0.1",
+  "description": "project-lana cli tool",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FotieMConstant/lanadoc-cli.git"
+  },
+  "keywords": [
+    "project-lana",
+    "lanadoc"
+  ],
+  "author": "fotiecodes",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FotieMConstant/lanadoc-cli/issues"
+  },
+  "homepage": "https://github.com/FotieMConstant/lanadoc-cli#readme",
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.3",
+    "@types/inquirer": "^9.0.6",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "execa": "^8.0.1",
+    "fs-extra": "^11.1.1",
+    "gitignore": "^0.7.0",
+    "inquirer": "^9.2.11",
+    "pkg-install": "^1.0.0"
+  }
+}
