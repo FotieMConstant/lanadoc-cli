@@ -228,10 +228,28 @@ class lanaDocCLI {
 yargs(hideBin(process.argv))
   .command({
     command: 'init',
-    describe: '- Initialize config file and docs',
+    describe: '- Initialize config file and docs', // description for the command
     handler: () => {
+    // we initialize the lana.config.ts file
       const lana = new lanaDocCLI();
       lana.generateLanaConfigFile();
+    },
+  })
+  .command({
+    command: 'generate',
+    describe: '- Generates docs refernce .yaml file', // description for the command
+    handler: () => {
+      // Add the logic for the "generate" command here
+      // For example, you can call a generate function or perform any other action.
+      console.log('Generating something...');
+    },
+  })
+  .command({
+    command: 'serve',
+    describe: '- Launches a node server to serve the docs', // description for the command
+    handler: () => {
+      console.log('Starting the server...');
+      // Add logic to start a server, e.g., using Express or another framework.
     },
   })
   .demandCommand() // Require a command to be provided
