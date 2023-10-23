@@ -1,7 +1,13 @@
+#!/usr/bin/env node
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 import inquirer from "inquirer";
 import fs from "fs-extra";
 import dotenv from "dotenv";
 import path from "path";
+
+
+
 
 class lanaDocCLI {
   OPENAI_API_KEY: string; // api key gotten from open api
@@ -79,7 +85,7 @@ class lanaDocCLI {
         type: "input",
         name: "licenseName",
         message: "License name:",
-        default: "MIT", // Set a default version
+        default: "ISC", // Set a default version
       },
       {
         type: "input",
@@ -204,7 +210,7 @@ class lanaDocCLI {
   // main function that runs the script
   async run() {
     
-    await this.generateLanaConfigFile(); // generate the lana.config.ts file
+    // await this.generateLanaConfigFile(); // generate the lana.config.ts file
 
     // const results = await inquirer.prompt([
     //   { type: "list", name: "theme", choices: await this.listFilesInDirectory(path.join(process.cwd(), "themes")) }
@@ -216,5 +222,18 @@ class lanaDocCLI {
   }
 }
 
-const lana = new lanaDocCLI();
-lana.run();
+/**
+* All the commands that can be run by the CLI tool are defined here
+*/
+yargs(hideBin(process.argv))
+  .command({
+    command: 'init',
+    describe: '- Initialize config file and docs',
+    handler: () => {
+      const lana = new lanaDocCLI();
+      lana.generateLanaConfigFile();
+    },
+  })
+  .demandCommand() // Require a command to be provided
+  .help()
+  .parse(); // Enable --help option
