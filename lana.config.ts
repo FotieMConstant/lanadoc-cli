@@ -1,5 +1,5 @@
 const lanaConfig = {
-  theme: "Alternate",
+  theme: "Purple",
   metaInfo: {
     info: {
       title: "lanadoc-cli-api-doc",
@@ -13,13 +13,13 @@ const lanaConfig = {
       },
       license: {
         name: "MIT",
-        url: "efwe"
+        url: ""
       }
     },
     servers: [
       {
-        url: "fwe",
-        description: "fwe"
+        url: "",
+        description: ""
       }
     ]
   }
