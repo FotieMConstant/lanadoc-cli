@@ -13,6 +13,7 @@ import path from "path";
 
 class devWorkspaceCLI {
   OPENAI_API_KEY: string; // api key gotten from open api
+  currentDirectory: string = process.cwd(); // current working directory
 
   // our constructor for our class
   constructor() {
@@ -39,6 +40,129 @@ class devWorkspaceCLI {
     }
   }
 
+  // Function to prompt the user for project info
+  async getProjectMetaDataInfo() {
+
+    // Prompt for project info
+    const info = await inquirer.prompt([
+      {
+        type: "input",
+        name: "title",
+        message: "Doc name (title):",
+        default: path.basename(this.currentDirectory) + "-api-doc", // Set the default title
+      },
+      {
+        type: "input",
+        name: "version",
+        message: "API version:",
+        default: "1.0.0", // Set a default version
+      },
+      {
+        type: "input",
+        name: "description",
+        message: "API description:",
+      },
+      {
+        type: "input",
+        name: "termsOfService",
+        message: "Terms of service URL:",
+      },
+      {
+        type: "input",
+        name: "contactName",
+        message: "Contact name:",
+      },
+      {
+        type: "input",
+        name: "contactEmail",
+        message: "Contact email:",
+      },
+      {
+        type: "input",
+        name: "contactURL",
+        message: "Contact URL:",
+      },
+      {
+        type: "input",
+        name: "licenseName",
+        message: "License name:",
+        default: "MIT", // Set a default version
+      },
+      {
+        type: "input",
+        name: "licenseURL",
+        message: "License URL:",
+      },
+    ]);
+  
+    // Prepare the data structure
+    const lanaConfig = {
+      info: {
+        title: info.title,
+        version: info.version,
+        description: info.description,
+        termsOfService: info.termsOfService,
+        contact: {
+          name: info.contactName,
+          email: info.contactEmail,
+          url: info.contactURL,
+        },
+        license: {
+          name: info.licenseName,
+          url: info.licenseURL,
+        },
+      },
+      servers: [],
+    };
+  
+    // Prompt for servers
+    let addServer = true;
+    while (addServer) {
+    
+      const server = await inquirer.prompt([
+        {
+          type: "input",
+          name: "url",
+          message: "Server URL:",
+        },
+        {
+          type: "input",
+          name: "description",
+          message: "Server description:",
+        },
+      ]);
+      (lanaConfig.servers as string[]).push(server);
+  
+      const { addAnotherServer } = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "addAnotherServer",
+          message: "Add another server?",
+          default: false,
+        },
+      ]);
+  
+      addServer = addAnotherServer;
+    }
+    
+    return lanaConfig;
+  }
+
+  // Function to generate the lana.config.ts file
+    async generateLanaConfigFile() {
+    const projectInfo = await this.getProjectMetaDataInfo();
+    const configFilePath = path.join(this.currentDirectory, "lana.config.ts");
+  
+    const configContent = `const lanaConfig = ${JSON.stringify(projectInfo, null, 2)};\n\nexport default lanaConfig;\n`;
+  
+    try {
+      await fs.writeFile(configFilePath, configContent);
+      console.log(`lana.config.ts file created successfully in root directory.`);
+    } catch (err) {
+      console.error("Failed to create lana.config.ts file:", err);
+    }
+  }
+
   // list files and return all the file names in the directory as an array
   async listFilesInDirectory(directoryPath: string) {
     try {
@@ -53,10 +177,12 @@ class devWorkspaceCLI {
   }
 
   async run() {
-    const results = await inquirer.prompt([
-      { type: "list", name: "project", choices: await this.listFilesInDirectory(path.join(process.cwd(), "themes")) }
-    ]);
-    console.log(results);
+    
+    this.generateLanaConfigFile();
+    // const results = await inquirer.prompt([
+    //   { type: "list", name: "theme", choices: await this.listFilesInDirectory(path.join(process.cwd(), "themes")) }
+    // ]);
+    // console.log(results);
 
      // List files in the themes directory
     //  await this.listFilesInDirectory(path.join(process.cwd(), "themes"));
