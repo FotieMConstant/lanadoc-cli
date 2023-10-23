@@ -1,12 +1,20 @@
+#!/usr/bin/env node
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 import inquirer from "inquirer";
 import fs from "fs-extra";
 import dotenv from "dotenv";
 import path from "path";
 
+
+
+
 class lanaDocCLI {
   OPENAI_API_KEY: string; // api key gotten from open api
   currentDirectory: string = process.cwd(); // current working directory
   themesDirectory: string = path.join(process.cwd(), "themes"); // themes directory
+  exclusionDirs: Array<string> = ["node_modules", ".git", ".github", "docs", ".gitignore", ".DS_Store", ".env"]; // Directories to exclude while indexing project
+
 
   // our constructor for our class
   constructor() {
@@ -31,6 +39,10 @@ class lanaDocCLI {
       process.exit(1);
       return ""; // Ensure a default value in case of error
     }
+  }
+  // get global open api key
+  getGlobalOpenApiKey(): string {
+    return this.OPENAI_API_KEY;
   }
 
   // Function to prompt the user for project info
@@ -79,7 +91,7 @@ class lanaDocCLI {
         type: "input",
         name: "licenseName",
         message: "License name:",
-        default: "MIT", // Set a default version
+        default: "ISC", // Set a default version
       },
       {
         type: "input",
@@ -159,7 +171,7 @@ class lanaDocCLI {
   
     try {
       await fs.writeFile(configFilePath, configContent);
-      console.log(`lana.config.ts file created successfully in root directory.`);
+      console.log(`lana.config.ts file generated successfully in root directory.`);
     } catch (err) {
       console.error("Failed to create lana.config.ts file:", err);
     }
@@ -201,20 +213,99 @@ class lanaDocCLI {
     return result;
   }
 
-  // main function that runs the script
-  async run() {
+  // generate the docs reference file in docs/public/resources/openapi-spec-sample.yaml
+
+  // get all the files in the project directory so we can analyse them later with our LLM
+  async getProjectFilesDirList(baseDirectory: string, currentDirectory = '.'): Promise<string[]> {
+    const directoryPath = path.join(baseDirectory, currentDirectory);
+    const exclusions = this.exclusionDirs; // Directories to exclude
+
+    try {
+        const items = await fs.readdir(directoryPath);
+
+        const subitems: string[] = [];
+        for (const item of items) {
+            const itemPath = path.join(directoryPath, item);
+            const itemStat = await fs.lstat(itemPath);
+
+            if (!exclusions.includes(item)) {
+                subitems.push(path.join(currentDirectory, item));
+
+                if (itemStat.isDirectory()) {
+                    const subSubitems = await this.getProjectFilesDirList(baseDirectory, path.join(currentDirectory, item));
+                    subitems.push(...subSubitems);
+                }
+            }
+        }
+        console.log(subitems);
+
+        return subitems;
+    } catch (error) {
+        console.error(`Error reading directory ${directoryPath}: ${error.message}`);
+        return [];
+    }
+}
+
+
+
+
+/**
+* All the command functions that will be called by yargs are defined here
+*/
+
+
+  // run the init process
+async runInitCommand() {
+    // we initialize the lana.config.ts file
+    await this.generateLanaConfigFile();
+    console.log('✅ Done initializing... \n\n');
+    console.log('Now cd to docs/ \n\n');
+    console.log('Run "lanadoc generate" to generate the docs reference file');
+    console.log('Run "lanadoc serve" to start the doc server\n\n');
+  }
+
+  // run the generate process
+  async runGenerateCommand() {
+    this.getProjectFilesDirList(this.currentDirectory);
     
-    await this.generateLanaConfigFile(); // generate the lana.config.ts file
-
-    // const results = await inquirer.prompt([
-    //   { type: "list", name: "theme", choices: await this.listFilesInDirectory(path.join(process.cwd(), "themes")) }
-    // ]);
-    // console.log(results);
-
-     // List files in the themes directory
-    //  await this.listFilesInDirectory(path.join(process.cwd(), "themes"));
   }
 }
 
+
+/**
+* All the commands that can be run by the CLI tool are defined here
+*/
+// create a new instance of our class
 const lana = new lanaDocCLI();
-lana.run();
+
+yargs(hideBin(process.argv))
+  .command({
+    command: 'init',
+    describe: '- Initialize config file and docs', // description for the command
+    handler: async () => {
+    // we initialize the lana.config.ts file
+     await lana.runInitCommand();
+    },
+  })
+  .command({
+    command: 'generate',
+    describe: '- Generates docs refernce .yaml file', // description for the command
+    handler: () => {
+      // Add the logic for the "generate" command here
+      // For example, you can call a generate function or perform any other action.
+      console.log('Generating something...');
+      lana.runGenerateCommand();
+      
+    },
+  })
+  .command({
+    command: 'serve',
+    describe: '- Launches a node server to serve the docs', // description for the command
+    handler: () => {
+      console.log('Starting the server...');
+      // Add logic to start a server, e.g., using Express or another framework.
+    },
+  })
+  .demandCommand() // Require a command to be provided
+  .help()
+  .parse(); // Enable --help option
