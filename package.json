@@ -28,6 +28,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "dotenv": "^16.3.1",
     "execa": "^8.0.1",
     "fs-extra": "^11.1.1",
     "gitignore": "^0.7.0",
