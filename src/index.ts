@@ -3,15 +3,7 @@ import fs from "fs-extra";
 import dotenv from "dotenv";
 import path from "path";
 
-
-// async function main() {
-//     const results =  await inquirer.prompt([{type: "list", name: "project", choices: ["hi", "hello"]}]);
-//     console.log(results);
-// }
-
-// main();import inquirer from "inquirer";
-
-class devWorkspaceCLI {
+class lanaDocCLI {
   OPENAI_API_KEY: string; // api key gotten from open api
   currentDirectory: string = process.cwd(); // current working directory
 
@@ -31,7 +23,7 @@ class devWorkspaceCLI {
         console.error("No OPENAI_API_KEY found in the .env file.");
         process.exit(1);
       }
-
+      console.log("OPENAI_API_KEY loaded successfully from the .env file.");
       return apiKey;
     } catch (err) {
       console.error("Error loading environment variables:", err);
@@ -189,5 +181,5 @@ class devWorkspaceCLI {
   }
 }
 
-const cli = new devWorkspaceCLI();
-cli.run();
+const lana = new lanaDocCLI();
+lana.run();
