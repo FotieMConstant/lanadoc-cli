@@ -6,6 +6,7 @@ import path from "path";
 class lanaDocCLI {
   OPENAI_API_KEY: string; // api key gotten from open api
   currentDirectory: string = process.cwd(); // current working directory
+  themesDirectory: string = path.join(process.cwd(), "themes"); // themes directory
 
   // our constructor for our class
   constructor() {
@@ -89,7 +90,9 @@ class lanaDocCLI {
   
     // Prepare the data structure
     const lanaConfig = {
-      info: {
+      theme: "Default",
+      metaInfo: {
+        info: {
         title: info.title,
         version: info.version,
         description: info.description,
@@ -105,7 +108,9 @@ class lanaDocCLI {
         },
       },
       servers: [],
-    };
+    }, 
+    }
+
   
     // Prompt for servers
     let addServer = true;
@@ -123,7 +128,7 @@ class lanaDocCLI {
           message: "Server description:",
         },
       ]);
-      (lanaConfig.servers as string[]).push(server);
+      (lanaConfig.metaInfo.servers as string[]).push(server);
   
       const { addAnotherServer } = await inquirer.prompt([
         {
@@ -136,6 +141,10 @@ class lanaDocCLI {
   
       addServer = addAnotherServer;
     }
+    // prompt dev to select a theme
+   const myTheme = await this.selectTheme();
+//    console.log("myTheme => ",myTheme);
+    lanaConfig.theme = myTheme.theme; // set the theme to the selected theme
     
     return lanaConfig;
   }
@@ -145,7 +154,8 @@ class lanaDocCLI {
     const projectInfo = await this.getProjectMetaDataInfo();
     const configFilePath = path.join(this.currentDirectory, "lana.config.ts");
   
-    const configContent = `const lanaConfig = ${JSON.stringify(projectInfo, null, 2)};\n\nexport default lanaConfig;\n`;
+    const configContent =`const lanaConfig = ${JSON.stringify(projectInfo, null, 2)
+        .replace(/"([^"]+)":/g, "$1:")};\n\nexport default lanaConfig;\n`;
   
     try {
       await fs.writeFile(configFilePath, configContent);
@@ -159,8 +169,8 @@ class lanaDocCLI {
   async listFilesInDirectory(directoryPath: string) {
     try {
       const files = await fs.readdir(directoryPath);
-      console.log(`Files in the directory '${directoryPath}':`);
-      console.log(files);
+    //   console.log(`Files in the directory '${directoryPath}':`);
+    //   console.log(files);
       return files; // returning the files
     } catch (err) {
       console.error(`Failed to list files in the directory '${directoryPath}':`, err);
@@ -168,9 +178,34 @@ class lanaDocCLI {
     }
   }
 
+  // function to prompt dev to select a theme
+  async selectTheme() {
+    const themeFiles = await this.listFilesInDirectory(this.themesDirectory);
+
+    let defaultTheme = "";
+    if (themeFiles.length >= 2) {
+      defaultTheme = themeFiles[1]; // Use the second file as the default team
+    }
+
+    const result = await inquirer.prompt([
+      {
+        type: "list",
+        name: "theme",
+        message: "Select a theme:",
+        choices: themeFiles,
+        default: defaultTheme, // Set the default theme
+      },
+    ]);
+    // console.log(result);
+
+    return result;
+  }
+
+  // main function that runs the script
   async run() {
     
-    this.generateLanaConfigFile();
+    await this.generateLanaConfigFile(); // generate the lana.config.ts file
+
     // const results = await inquirer.prompt([
     //   { type: "list", name: "theme", choices: await this.listFilesInDirectory(path.join(process.cwd(), "themes")) }
     // ]);
