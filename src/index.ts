@@ -247,7 +247,7 @@ class lanaDocCLI {
        // TO DO
     // 1. read the dev's config file
     const configFile = await this.readConfigFile(); // read dev's config file
-    console.log(configFile.sourcePaths);
+    // console.log(JSON.stringify(configFile.servers, null, 2));
     // 2. read the content of the "routes" and "implementation" files
 
     // getting the content of all routes files added by the dev in the lana.config.json file
@@ -263,7 +263,7 @@ class lanaDocCLI {
     }
     // join the routes array to a string
    const routeStringContent = routes.join("");
-   console.log("routes files content start here => \n\n" , routeStringContent);
+//    console.log("routes files content start here => \n\n" , routeStringContent);
 
    // getting the content of all implementation files added by the dev in the lana.config.json file
     const implementations = [];
@@ -278,14 +278,50 @@ class lanaDocCLI {
     }
     // join the implementations array to a string
     const implementationStringContent = implementations.join("");
-    console.log("implementation files content start here => \n\n" , implementationStringContent);
+    // console.log("implementation files content start here => \n\n" , implementationStringContent);
 
-
+    // TO DO
+    // Validate the yaml file
+     
+    const prompt = `Generate a yaml file api specification following the openAPI 3.0.0 standard 
+    with this data. Add detailed user friendly explanations in descriptions of endpoints and good summaries.
+     here is basic information about the api documenation:
+    title: `+configFile.info.title+`,
+    version: `+configFile.info.version+`,
+    description: `+configFile.info.description+`,
+    termsOfService: `+configFile.info.title+`,
+    contact: `+JSON.stringify(configFile.info.contact, null, 2)+`,
+    license: `+JSON.stringify(configFile.info.license, null, 2)+`,
+    servers: `+JSON.stringify(configFile.servers, null, 2)+`,
+     here are all the endpoints` + routeStringContent +`\n\n\n and here are all 
+    the implementations: `+ implementationStringContent +"\n\n Extremely Important: don't include any explanations in your responses ";
 
    // 3. submit the content to the LLM
+    const completion = await this.openai.completions.create({
+        model: "gpt-3.5-turbo-instruct",
+        prompt: prompt,
+        max_tokens: 2097,
+    });
+
+    // Handle the response from LLM 
+    const generatedContent = completion.choices[0].text; // Extract the generated content
+    console.log(generatedContent);
+
 
    // 4. save the result to .yaml file at docs/public/resources/openapi-spec.yaml
-    
+   const filePath = './docs/public/resource/openapi-spec.yaml';
+
+    // Ensure the directory exists
+    const dirPath = path.dirname(filePath);
+    if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+    }
+
+    // Write the generated content to the file (create or update)
+    fs.writeFileSync(filePath, generatedContent);
+
+    console.log('Saved OpenAPI spec to:', filePath);
+
   }
 
 
