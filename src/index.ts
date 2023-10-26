@@ -5,6 +5,8 @@ import inquirer from "inquirer";
 import fs from "fs-extra";
 import dotenv from "dotenv";
 import path from "path";
+import OpenAI from "openai";
+
 
 
 
@@ -14,11 +16,13 @@ class lanaDocCLI {
   currentDirectory: string = process.cwd(); // current working directory
   themesDirectory: string = path.join(process.cwd(), "themes"); // themes directory
   exclusionDirs: Array<string> = ["node_modules", ".git", ".github", "docs", ".gitignore", ".DS_Store", ".env"]; // Directories to exclude while indexing project
-
+  openai: any; // openai api instance
 
   // our constructor for our class
   constructor() {
     this.OPENAI_API_KEY = this.getOpenApiKey();
+    this.openai = new OpenAI({ apiKey: this.getOpenApiKey() }); // instantiating the openai api
+
   }
   // get the open api key from the .env file
   private getOpenApiKey(): string {
@@ -161,19 +165,19 @@ class lanaDocCLI {
     return lanaConfig;
   }
 
-  // Function to generate the lana.config.ts file
-    async generateLanaConfigFile() {
+  // Function to generate the lana.config.json file
+  async generateLanaConfigFile() {
     const projectInfo = await this.getProjectMetaDataInfo();
-    const configFilePath = path.join(this.currentDirectory, "lana.config.ts");
+    const configFilePath = path.join(this.currentDirectory, 'lana.config.json');
   
-    const configContent =`const lanaConfig = ${JSON.stringify(projectInfo, null, 2)
-        .replace(/"([^"]+)":/g, "$1:")};\n\nexport default lanaConfig;\n`;
+    // Convert the data to JSON with indentation (2 spaces)
+    const configContent = JSON.stringify(projectInfo, null, 2);
   
     try {
       await fs.writeFile(configFilePath, configContent);
-      console.log(`lana.config.ts file generated successfully in root directory.`);
+      console.log(`lana.config.json file generated successfully in docs/ directory.`);
     } catch (err) {
-      console.error("Failed to create lana.config.ts file:", err);
+      console.error("Failed to create lana.config.json file:", err);
     }
   }
 
@@ -213,38 +217,82 @@ class lanaDocCLI {
     return result;
   }
 
-  // generate the docs reference file in docs/public/resources/openapi-spec-sample.yaml
+  // read dev's config file
+  async readConfigFile(): Promise<any> {
 
-  // get all the files in the project directory so we can analyse them later with our LLM
-  async getProjectFilesDirList(baseDirectory: string, currentDirectory = '.'): Promise<string[]> {
-    const directoryPath = path.join(baseDirectory, currentDirectory);
-    const exclusions = this.exclusionDirs; // Directories to exclude
+    console.log("Reading config file...");
+    const configFilePath = path.join(this.currentDirectory, 'lana.config.json');
 
     try {
-        const items = await fs.readdir(directoryPath);
-
-        const subitems: string[] = [];
-        for (const item of items) {
-            const itemPath = path.join(directoryPath, item);
-            const itemStat = await fs.lstat(itemPath);
-
-            if (!exclusions.includes(item)) {
-                subitems.push(path.join(currentDirectory, item));
-
-                if (itemStat.isDirectory()) {
-                    const subSubitems = await this.getProjectFilesDirList(baseDirectory, path.join(currentDirectory, item));
-                    subitems.push(...subSubitems);
-                }
-            }
-        }
-        console.log(subitems);
-
-        return subitems;
+      const configFileContent = fs.readFileSync(configFilePath, 'utf-8');
+      const configData = JSON.parse(configFileContent);
+      return configData;
     } catch (error) {
-        console.error(`Error reading directory ${directoryPath}: ${error.message}`);
-        return [];
+      console.error('Error reading or parsing the config file:', error);
+      return null;
     }
-}
+  }
+ // read a file's content with only path
+  async readAFileContent(filePath: string): Promise<string | null> {
+    try {
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      return fileContent;
+    } catch (error) {
+      console.error('Error reading the file:', error);
+      return null;
+    }
+  }
+
+  async convertToOpenAPISpec(){
+       // TO DO
+    // 1. read the dev's config file
+    const configFile = await this.readConfigFile(); // read dev's config file
+    console.log(configFile.sourcePaths);
+    // 2. read the content of the "routes" and "implementation" files
+
+    // getting the content of all routes files added by the dev in the lana.config.json file
+    const routes = [];
+    for (const filePath of configFile.sourcePaths.routes) {
+        const content = await this.readAFileContent(filePath);
+        if (content !== null) {
+            if (routes.length > 0) {
+                routes.push("\n\n");
+            }
+            routes.push(content.toString());
+        }
+    }
+    // join the routes array to a string
+   const routeStringContent = routes.join("");
+   console.log("routes files content start here => \n\n" , routeStringContent);
+
+   // getting the content of all implementation files added by the dev in the lana.config.json file
+    const implementations = [];
+    for (const filePath of configFile.sourcePaths.implementation) {
+        const content = await this.readAFileContent(filePath);
+        if (content !== null) {
+            if (implementations.length > 0) {
+                implementations.push("\n\n");
+            }
+            implementations.push(content.toString());
+        }
+    }
+    // join the implementations array to a string
+    const implementationStringContent = implementations.join("");
+    console.log("implementation files content start here => \n\n" , implementationStringContent);
+
+
+
+   // 3. submit the content to the LLM
+
+   // 4. save the result to .yaml file at docs/public/resources/openapi-spec.yaml
+    
+  }
+
+
+
+  
+
+
 
 
 
@@ -256,7 +304,7 @@ class lanaDocCLI {
 
   // run the init process
 async runInitCommand() {
-    // we initialize the lana.config.ts file
+    // we initialize the lana.config.json file
     await this.generateLanaConfigFile();
     console.log('✅ Done initializing... \n\n');
     console.log('Now cd to docs/ \n\n');
@@ -266,8 +314,7 @@ async runInitCommand() {
 
   // run the generate process
   async runGenerateCommand() {
-    this.getProjectFilesDirList(this.currentDirectory);
-    
+   await this.convertToOpenAPISpec();
   }
 }
 
@@ -283,7 +330,8 @@ yargs(hideBin(process.argv))
     command: 'init',
     describe: '- Initialize config file and docs', // description for the command
     handler: async () => {
-    // we initialize the lana.config.ts file
+    // we initialize the lana.config.json file
+    console.log('Initializing lanadoc...');
      await lana.runInitCommand();
     },
   })
@@ -293,7 +341,7 @@ yargs(hideBin(process.argv))
     handler: () => {
       // Add the logic for the "generate" command here
       // For example, you can call a generate function or perform any other action.
-      console.log('Generating something...');
+      console.log('🛠 Generating doc...');
       lana.runGenerateCommand();
       
     },

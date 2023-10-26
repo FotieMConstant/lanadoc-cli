@@ -1,0 +1,30 @@
+{
+  "theme": "Default",
+  "sourcePaths": {
+    "routes": ["./routes/quote_route.js"],
+    "implementation": ["./controllers/quote_controller.js"]
+  },
+  "metaInfo": {
+    "info": {
+      "title": "lanadoc-cli-api-doc",
+      "version": "1.0.0",
+      "description": "",
+      "termsOfService": "",
+      "contact": {
+        "name": "",
+        "email": "",
+        "url": ""
+      },
+      "license": {
+        "name": "ISC",
+        "url": ""
+      }
+    },
+    "servers": [
+      {
+        "url": "",
+        "description": ""
+      }
+    ]
+  }
+}
