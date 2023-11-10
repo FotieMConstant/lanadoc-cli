@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "project-lana cli tool",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
     "build": "tsc -b",
@@ -37,7 +37,8 @@
     "execa": "^8.0.1",
     "fs-extra": "^11.1.1",
     "gitignore": "^0.7.0",
-    "inquirer": "^9.2.11"
+    "inquirer": "^9.2.11",
+    "openai": "^4.13.0"
   },
   "bin": {
     "lanadoc": "dist/index.js"

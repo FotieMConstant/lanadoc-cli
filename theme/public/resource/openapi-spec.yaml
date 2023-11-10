@@ -1,0 +1,222 @@
+
+openapi: 3.0.0
+info:
+  title: Geek Quote API
+  version: 1.0.0
+  description: The Quote API is a service that provides a collection of inspirational quotes. You can use this API to retrieve random quotes, filter quotes by keywords, and explore the wisdom of known authors.
+  termsOfService: https://example.com/terms
+  contact:
+    name: fotiecodes
+    email: contact@fotiecodes.com
+    url: https://fotiecodes.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+servers:
+  - url: https://geek-quote-api.vercel.app
+    description: Production server
+  - url: https://localhost:3000
+    description: Developement server
+  
+paths:
+  /v1/quotes:
+    get:
+      summary: Get all quotes
+      description: Retrieves a list of all available quotes from the API.
+      responses:
+        '200':
+          description: Successful response with a list of quotes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
+  /v1/quote:
+    get:
+      summary: Get a single quote
+      description: Retrieves a random quote from the API.
+      responses:
+        '200':
+          description: Successful response with a single quote.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Quote'
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
+  /v1/quote/{count}:
+    get:
+      summary: Get multiple quotes
+      description: Retrieves a list containing a specific number of quotes from the API.
+      parameters:
+        - in: path
+          name: count
+          description: The number of quotes to retrieve.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 5
+      responses:
+        '200':
+          description: Successful response with the requested number of quotes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+        '400':
+          description: Bad request. Invalid count provided.
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
+  /v1/quote/filter/known:
+    get:
+      summary: Get a quote from a known author
+      description: Retrieves a random quote from an author who is known.
+      responses:
+        '200':
+          description: Successful response with a single quote from a known author.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Quote'
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
+  /v1/quote/filter/known/{count}:
+    get:
+      summary: Get multiple quotes from known authors
+      description: Retrieves a list of quotes from a specific number of known authors.
+      parameters:
+        - in: path
+          name: count
+          description: The number of quotes to retrieve.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            example: 5
+      responses:
+        '200':
+          description: Successful response with the requested number of quotes from known authors.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+        '400':
+          description: Bad request. Invalid count provided.
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
+  /v1/quote/filter/{keyword}:
+    get:
+      summary: Get a quote with a specific keyword
+      description: Retrieves a random quote that contains the specified keyword.
+      parameters:
+        - in: path
+          name: keyword
+          description: The keyword to search for in the quotes.
+          required: true
+          schema:
+            type: string
+            example: wisdom
+      responses:
+        '200':
+          description: Successful response with a single quote that contains the specified keyword.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Quote'
+        '400':
+          description: Bad request. Invalid keyword provided.
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
+  /v1/quote/filter/all/{keyword}:
+    get:
+      summary: Get all quotes with a specific keyword
+      description: Retrieves a list of quotes that contain the specified keyword.
+      parameters:
+        - in: path
+          name: keyword
+          description: The keyword to search for in the quotes.
+          required: true
+          schema:
+            type: string
+            example: wisdom
+      responses:
+        '200':
+          description: Successful response with a list of quotes that contain the specified keyword.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+        '400':
+          description: Bad request. Invalid keyword provided.
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
+components:
+  schemas:
+    Quote:
+      type: object
+      properties:
+        quote:
+          type: string
+          description: The quote text.
+          example: "The greatest glory in living lies not in never falling, but in rising every time we fall."
+        author:
+          type: string
+          description: The author of the quote.
+          example: Nelson Mandela
