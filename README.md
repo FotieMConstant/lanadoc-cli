@@ -32,28 +32,45 @@ Use the following command to create a new lanadoc-cli project:
 lanadoc init
 ```
 
-This command initializes your project and generates the `lana.config.ts` file in your project's root directory. This file contains essential meta info about your API doc and some customization.
+This command initializes your project and generates a `lana.config.ts` file in docs/ directory. This file contains essential meta info about your API doc and some customization like theme.
+
+Available themes: ```'alternate' | 'default' | 'moon' | 'purple' | 'solarized' ```
 
 ### Step 2: Generate Documentation
 
-Once your project is initialized, generate documentation with:
+Once your project is initialized, `cd` to docs/ directory and generate documentation with:
 
 ```bash
 lanadoc generate
 ```
 
-This command processes your source code, file structure etc, turning your code into comprehensive documentation.
+This command processes your source code etc, turning your code into comprehensive documentation.
+
+**🚨Important Note:** routes files and implementation to your endpoints are required in your `lana.config.json` to be able to generate the doc spec.
+
+**Example**:
+```json
+// other configs
+ "sourcePaths": {
+    "routes": ["./routes/quote_route.js"],
+    "implementation": ["./controllers/quote_controller.js"]
+  },
+// other configs
+```
+
+You should provide all the endpoint routes files paths in the `routes` array and their corresponding implementations in the `implementation` array as seen in the example code above. 
 
 ### Step 3: View Your Documentation
 
 To view your generated documentation locally, start the lanadoc-cli server:
 
 ```bash
-lanadoc serve
+npm run serve
 ```
 
 This will launch a local server, allowing you to explore and interact with your documentation through a web browser.
 
+**Note**: you need to have vue-cli installed globally
 <!-- ## Contributing
 
 We welcome contributions and bug reports. Please check out our [contribution guidelines](CONTRIBUTING.md) for details on how to get involved. -->
