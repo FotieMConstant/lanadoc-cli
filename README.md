@@ -67,11 +67,12 @@ You should provide all the endpoint routes files paths in the `routes` array and
 
 To view your generated documentation locally, start the lanadoc-cli server:
 
+In the docs/ directory run...
 ```bash
 npm run serve
 ```
 
-This will launch a local server, allowing you to explore and interact with your documentation through a web browser.
+This will launch a local dev server, allowing you to explore and interact with your doc site through your web browser.
 
 **Note**: you need to have vue-cli installed globally
 <!-- ## Contributing
