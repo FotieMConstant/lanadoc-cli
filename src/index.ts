@@ -7,6 +7,10 @@ import dotenv from "dotenv";
 import path from "path";
 import OpenAI from "openai";
 
+// fixig __dirname scope issue in es6 modules
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 
@@ -14,7 +18,7 @@ import OpenAI from "openai";
 class lanaDocCLI {
   OPENAI_API_KEY: string; // api key gotten from open api
   currentDirectory: string = process.cwd(); // current working directory
-  themesDirectory: string = path.join(process.cwd(), "themes"); // themes directory
+  themesDirectory: string = path.join(__dirname, '../themes'); // themes directory
   exclusionDirs: Array<string> = ["node_modules", ".git", ".github", "docs", ".gitignore", ".DS_Store", ".env"]; // Directories to exclude while indexing project
   openai: any; // openai api instance
 
@@ -107,6 +111,10 @@ class lanaDocCLI {
     // Prepare the data structure
     const lanaConfig = {
       theme: "Default",
+      sourcePaths: {
+        routes: [],
+        implementation: [],
+      },
       metaInfo: {
         info: {
         title: info.title,
@@ -175,7 +183,7 @@ class lanaDocCLI {
   
     try {
       await fs.writeFile(configFilePath, configContent);
-      console.log(`lana.config.json file generated successfully in docs/ directory.`);
+      console.log(`lana.config.json file generated successfully in root directory.`);
     } catch (err) {
       console.error("Failed to create lana.config.json file:", err);
     }
@@ -196,8 +204,10 @@ class lanaDocCLI {
 
   // function to prompt dev to select a theme
   async selectTheme() {
+    // List all the files in the themes directory
     const themeFiles = await this.listFilesInDirectory(this.themesDirectory);
 
+    // set the default theme to the second theme in the themes directory
     let defaultTheme = "";
     if (themeFiles.length >= 2) {
       defaultTheme = themeFiles[1]; // Use the second file as the default team
@@ -212,7 +222,21 @@ class lanaDocCLI {
         default: defaultTheme, // Set the default theme
       },
     ]);
-    // console.log(result);
+    console.log(result.theme);
+    // console.log(path.join(__dirname, '../themes', result.theme));
+
+    // move the files to the docs directory
+    const source = path.join(__dirname, '../themes', result.theme);
+    const destination = path.join(this.currentDirectory, 'docs-beta');
+
+    try {
+      await fs.copy(source, destination);
+      console.log(`Successfuly initialized docs with '${result.theme}' theme in docs-beta/ directory.`)
+    } catch (err) {
+      console.error("Failed to initialized docs:", err);
+    }
+    
+
 
     return result;
   }
@@ -286,15 +310,15 @@ class lanaDocCLI {
     const prompt = `Generate a yaml file api specification following the openAPI 3.0.0 standard 
     with this data. Add detailed user friendly explanations in descriptions of endpoints and good summaries.
      here is basic information about the api documenation:
-    title: `+configFile.info.title+`,
-    version: `+configFile.info.version+`,
-    description: `+configFile.info.description+`,
-    termsOfService: `+configFile.info.title+`,
-    contact: `+JSON.stringify(configFile.info.contact, null, 2)+`,
-    license: `+JSON.stringify(configFile.info.license, null, 2)+`,
-    servers: `+JSON.stringify(configFile.servers, null, 2)+`,
+    title: `+configFile.metaInfo.info.title+`,
+    version: `+configFile.metaInfo.info.version+`,
+    description: `+configFile.metaInfo.info.description+`,
+    termsOfService: `+configFile.metaInfo.info.termsOfService+`,
+    contact: `+JSON.stringify(configFile.metaInfo.info.contact, null, 2)+`,
+    license: `+JSON.stringify(configFile.metaInfo.info.license, null, 2)+`,
+    servers: `+JSON.stringify(configFile.metaInfo.servers, null, 2)+`,
      here are all the endpoints` + routeStringContent +`\n\n\n and here are all 
-    the implementations: `+ implementationStringContent +"\n\n Extremely Important: don't include any explanations in your responses ";
+    the implementations: `+ implementationStringContent +"\n\n Extremely Important: don't include any explanations (DO NOT ADD ANY comments in the code) in your responses ";
 
    // 3. submit the content to the LLM
     const completion = await this.openai.completions.create({
@@ -343,9 +367,9 @@ async runInitCommand() {
     // we initialize the lana.config.json file
     await this.generateLanaConfigFile();
     console.log('✅ Done initializing... \n\n');
-    console.log('Now cd to docs/ \n\n');
-    console.log('Run "lanadoc generate" to generate the docs reference file');
-    console.log('Run "lanadoc serve" to start the doc server\n\n');
+    console.log('Now run "lanadoc generate" to generate the docs reference file\n\n');
+    console.log('...and cd to docs/ \n\n');
+    console.log('Run "npm run serve" to start the doc server\n\n');
   }
 
   // run the generate process

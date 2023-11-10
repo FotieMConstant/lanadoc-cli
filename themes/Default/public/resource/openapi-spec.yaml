@@ -1,0 +1,170 @@
+
+openapi: 3.0.0
+
+info:
+  title: Geek Quote API
+  version: 1.0.0
+  description: The Quote API is a service that provides a collection of inspirational quotes. You can use this API to retrieve random quotes, filter quotes by keywords, and explore the wisdom of known authors.
+  termsOfService: https://geekquoteapi.com/terms
+  contact: 
+    name: fotiecodes
+    email: contact@fotiecodes.com
+    url: https://fotiecodes.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: https://geek-quote-api.vercel.app
+    description: Production server
+  - url: https://localhost:3000
+    description: Development server
+
+paths:
+  /v1/quotes:
+    get:
+      summary: Get all quotes
+      description: Retrieves a list of all quotes available in the API.
+      responses:
+        200:
+          description: A list of all quotes along with their authors.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+        500:
+          description: Internal server error. Something went wrong while retrieving the list of quotes.
+
+  /v1/quote:
+    get:
+      summary: Get a single random quote
+      description: Retrieves a random quote from the list of quotes available in the API.
+      responses:
+        200:
+          description: A single random quote along with its author.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        500:
+          description: Internal server error. Something went wrong while retrieving the random quote.
+
+  /v1/quote/{count}:
+    get:
+      summary: Get a specified number of random quotes
+      description: Retrieves a specified number of random quotes from the list of quotes available in the API.
+      parameters:
+        - name: count
+          schema:
+            type: integer
+          required: true
+          description: The number of quotes to retrieve.
+      responses:
+        200:
+          description: A list of randomly generated quotes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+        400:
+          description: The count parameter is not a valid number.
+        500:
+          description: Internal server error. Something went wrong while retrieving the random quotes.
+
+  /v1/quote/filter/known:
+    get:
+      summary: Get a random quote from a known author
+      description: Retrieves a random quote from the list of quotes available in the API by a known author.
+      responses:
+        200:
+          description: A single random quote from a known author along with its author.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        500:
+          description: Internal server error. Something went wrong while retrieving the quote from a known author.
+
+  /v1/quote/filter/known/{count}:
+    get:
+      summary: Get a specified number of random quotes from known authors
+      description: Retrieves a specified number of random quotes from the list of quotes available in the API by known authors.
+      parameters:
+        - name: count
+          schema:
+            type: integer
+          required: true
+          description: The number of quotes to retrieve.
+      responses:
+        200:
+          description: A list of randomly generated quotes from known authors.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+        400:
+          description: The count parameter is not a valid number.
+        500:
+          description: Internal server error. Something went wrong while retrieving the quotes from known authors.
+
+  /v1/quote/filter/{keyword}:
+    get:
+      summary: Get the first quote that contains a keyword
+      description: Retrieves the first quote from the list of quotes available in the API that contains the specified keyword.
+      parameters:
+        - name: keyword
+          schema:
+            type: string
+          required: true
+          description: The keyword to search for.
+      responses:
+        200:
+          description: The first quote that contains the specified keyword.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        400:
+          description: The keyword parameter is missing.
+        500:
+          description: Internal server error. Something went wrong while retrieving the quote.
+
+  /v1/quote/filter/all/{keyword}:
+    get:
+      summary: Get all quotes that contain a keyword
+      description: Retrieves all quotes from the list of quotes available in the API that contain the specified keyword.
+      parameters:
+        - name: keyword
+          schema:
+            type: string
+          required: true
+          description: The keyword to search for.
+      responses:
+        200:
+          description: A list of all quotes that contain the specified keyword.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+        400:
+          description: The keyword parameter is missing.
+        500:
+          description: Internal server error. Something went wrong while retrieving the quotes.
+
+components:
+  schemas:
+    Quote:
+      type: object
+      properties:
+        quote:
+          type: string
+        author:
+          type: string
