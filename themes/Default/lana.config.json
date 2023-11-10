@@ -1,0 +1,30 @@
+{
+  "theme": "default",
+  "sourcePaths": {
+    "routes": [],
+    "implementation": []
+  },
+  "metaInfo": {
+    "info": {
+      "title": "api-doc",
+      "version": "1.0.0",
+      "description": "",
+      "termsOfService": "",
+      "contact": {
+        "name": "",
+        "email": "",
+        "url": ""
+      },
+      "license": {
+        "name": "ISC",
+        "url": ""
+      }
+    },
+    "servers": [
+      {
+        "url": "",
+        "description": ""
+      }
+    ]
+  }
+}

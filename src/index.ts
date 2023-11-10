@@ -25,8 +25,8 @@ class lanaDocCLI {
 
   // our constructor for our class
   constructor() {
-    this.OPENAI_API_KEY = this.getOpenApiKey();
-    this.openai = new OpenAI({ apiKey: this.getOpenApiKey() }); // instantiating the openai api
+    // this.OPENAI_API_KEY = this.getOpenApiKey();
+    // this.openai = new OpenAI({ apiKey: this.getOpenApiKey() }); // instantiating the openai api
 
   }
   // get the open api key from the .env file
@@ -177,7 +177,7 @@ class lanaDocCLI {
   // Function to generate the lana.config.json file
   async generateLanaConfigFile() {
     const projectInfo = await this.getProjectMetaDataInfo();
-    const configFilePath = path.join(this.currentDirectory, 'lana.config.json');
+    const configFilePath = path.join(this.currentDirectory, `${this.docsDirName}/lana.config.json`);
   
     // Convert the data to JSON with indentation (2 spaces)
     const configContent = JSON.stringify(projectInfo, null, 2);
@@ -246,7 +246,7 @@ class lanaDocCLI {
   async readConfigFile(): Promise<any> {
 
     console.log("Reading config file...");
-    const configFilePath = path.join(this.currentDirectory, 'lana.config.json');
+    const configFilePath = path.join(this.currentDirectory, `lana.config.json`);
 
     try {
       const configFileContent = fs.readFileSync(configFilePath, 'utf-8');
@@ -268,6 +268,7 @@ class lanaDocCLI {
     }
   }
 
+  // convert the dev's code to open api spec
   async convertToOpenAPISpec(){
        // TO DO
     // 1. read the dev's config file
@@ -288,7 +289,11 @@ class lanaDocCLI {
     }
     // join the routes array to a string
    const routeStringContent = routes.join("");
-//    console.log("routes files content start here => \n\n" , routeStringContent);
+  //  console.log("routes files content start here => \n\n" , routeStringContent);
+   if(routeStringContent === ""){
+        console.error("No routes code provided, please make sure you have added the routes files in the lana.config.json file");
+        return;
+   }
 
    // getting the content of all implementation files added by the dev in the lana.config.json file
     const implementations = [];
@@ -304,6 +309,10 @@ class lanaDocCLI {
     // join the implementations array to a string
     const implementationStringContent = implementations.join("");
     // console.log("implementation files content start here => \n\n" , implementationStringContent);
+    if(implementationStringContent === ""){
+        console.error("No implementation code provided, please make sure you have added the implementation files in the lana.config.json file");
+        return;
+    }
 
     // TO DO
     // Validate the yaml file
@@ -334,7 +343,7 @@ class lanaDocCLI {
 
 
    // 4. save the result to .yaml file at docs/public/resources/openapi-spec.yaml
-   const filePath = `./${this.docsDirName}/public/resource/openapi-spec.yaml`;
+   const filePath = `./public/resource/openapi-spec.yaml`;
 
     // Ensure the directory exists
     const dirPath = path.dirname(filePath);
@@ -365,6 +374,8 @@ class lanaDocCLI {
 
   // run the init process
 async runInitCommand() {
+    // this.OPENAI_API_KEY = this.getOpenApiKey();
+    // this.openai = new OpenAI({ apiKey: this.getOpenApiKey() }); // instantiating the openai api
     // we initialize the lana.config.json file
     await this.generateLanaConfigFile();
     console.log('✅ Done initializing... \n\n');
@@ -375,7 +386,10 @@ async runInitCommand() {
 
   // run the generate process
   async runGenerateCommand() {
-   await this.convertToOpenAPISpec();
+    this.OPENAI_API_KEY = this.getOpenApiKey();
+    this.openai = new OpenAI({ apiKey: this.getOpenApiKey() }); // instantiating the openai api
+
+    await this.convertToOpenAPISpec();
   }
 }
 
