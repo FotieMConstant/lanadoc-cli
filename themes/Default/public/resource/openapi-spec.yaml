@@ -1,164 +1,212 @@
 
 openapi: 3.0.0
-
 info:
   title: Geek Quote API
   version: 1.0.0
   description: The Quote API is a service that provides a collection of inspirational quotes. You can use this API to retrieve random quotes, filter quotes by keywords, and explore the wisdom of known authors.
-  termsOfService: https://geekquoteapi.com/terms
-  contact: 
+  termsOfService: https://example.com/terms
+  contact:
     name: fotiecodes
     email: contact@fotiecodes.com
     url: https://fotiecodes.com
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
-
 servers:
   - url: https://geek-quote-api.vercel.app
     description: Production server
   - url: https://localhost:3000
-    description: Development server
-
+    description: Developement server
+  
 paths:
   /v1/quotes:
     get:
       summary: Get all quotes
-      description: Retrieves a list of all quotes available in the API.
+      description: Retrieves a list of all available quotes from the API.
       responses:
-        200:
-          description: A list of all quotes along with their authors.
+        '200':
+          description: Successful response with a list of quotes.
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Quote'
-        500:
-          description: Internal server error. Something went wrong while retrieving the list of quotes.
-
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
   /v1/quote:
     get:
-      summary: Get a single random quote
-      description: Retrieves a random quote from the list of quotes available in the API.
+      summary: Get a single quote
+      description: Retrieves a random quote from the API.
       responses:
-        200:
-          description: A single random quote along with its author.
+        '200':
+          description: Successful response with a single quote.
           content:
             application/json:
               schema:
+                type: object
                 $ref: '#/components/schemas/Quote'
-        500:
-          description: Internal server error. Something went wrong while retrieving the random quote.
-
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
   /v1/quote/{count}:
     get:
-      summary: Get a specified number of random quotes
-      description: Retrieves a specified number of random quotes from the list of quotes available in the API.
+      summary: Get multiple quotes
+      description: Retrieves a list containing a specific number of quotes from the API.
       parameters:
-        - name: count
+        - in: path
+          name: count
+          description: The number of quotes to retrieve.
+          required: true
           schema:
             type: integer
-          required: true
-          description: The number of quotes to retrieve.
+            format: int32
+            minimum: 1
+            example: 5
       responses:
-        200:
-          description: A list of randomly generated quotes.
+        '200':
+          description: Successful response with the requested number of quotes.
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Quote'
-        400:
-          description: The count parameter is not a valid number.
-        500:
-          description: Internal server error. Something went wrong while retrieving the random quotes.
-
+        '400':
+          description: Bad request. Invalid count provided.
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
   /v1/quote/filter/known:
     get:
-      summary: Get a random quote from a known author
-      description: Retrieves a random quote from the list of quotes available in the API by a known author.
+      summary: Get a quote from a known author
+      description: Retrieves a random quote from an author who is known.
       responses:
-        200:
-          description: A single random quote from a known author along with its author.
+        '200':
+          description: Successful response with a single quote from a known author.
           content:
             application/json:
               schema:
+                type: object
                 $ref: '#/components/schemas/Quote'
-        500:
-          description: Internal server error. Something went wrong while retrieving the quote from a known author.
-
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
   /v1/quote/filter/known/{count}:
     get:
-      summary: Get a specified number of random quotes from known authors
-      description: Retrieves a specified number of random quotes from the list of quotes available in the API by known authors.
+      summary: Get multiple quotes from known authors
+      description: Retrieves a list of quotes from a specific number of known authors.
       parameters:
-        - name: count
+        - in: path
+          name: count
+          description: The number of quotes to retrieve.
+          required: true
           schema:
             type: integer
-          required: true
-          description: The number of quotes to retrieve.
+            format: int32
+            minimum: 1
+            example: 5
       responses:
-        200:
-          description: A list of randomly generated quotes from known authors.
+        '200':
+          description: Successful response with the requested number of quotes from known authors.
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Quote'
-        400:
-          description: The count parameter is not a valid number.
-        500:
-          description: Internal server error. Something went wrong while retrieving the quotes from known authors.
-
+        '400':
+          description: Bad request. Invalid count provided.
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
   /v1/quote/filter/{keyword}:
     get:
-      summary: Get the first quote that contains a keyword
-      description: Retrieves the first quote from the list of quotes available in the API that contains the specified keyword.
+      summary: Get a quote with a specific keyword
+      description: Retrieves a random quote that contains the specified keyword.
       parameters:
-        - name: keyword
+        - in: path
+          name: keyword
+          description: The keyword to search for in the quotes.
+          required: true
           schema:
             type: string
-          required: true
-          description: The keyword to search for.
+            example: wisdom
       responses:
-        200:
-          description: The first quote that contains the specified keyword.
+        '200':
+          description: Successful response with a single quote that contains the specified keyword.
           content:
             application/json:
               schema:
+                type: object
                 $ref: '#/components/schemas/Quote'
-        400:
-          description: The keyword parameter is missing.
-        500:
-          description: Internal server error. Something went wrong while retrieving the quote.
-
+        '400':
+          description: Bad request. Invalid keyword provided.
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
   /v1/quote/filter/all/{keyword}:
     get:
-      summary: Get all quotes that contain a keyword
-      description: Retrieves all quotes from the list of quotes available in the API that contain the specified keyword.
+      summary: Get all quotes with a specific keyword
+      description: Retrieves a list of quotes that contain the specified keyword.
       parameters:
-        - name: keyword
+        - in: path
+          name: keyword
+          description: The keyword to search for in the quotes.
+          required: true
           schema:
             type: string
-          required: true
-          description: The keyword to search for.
+            example: wisdom
       responses:
-        200:
-          description: A list of all quotes that contain the specified keyword.
+        '200':
+          description: Successful response with a list of quotes that contain the specified keyword.
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Quote'
-        400:
-          description: The keyword parameter is missing.
-        500:
-          description: Internal server error. Something went wrong while retrieving the quotes.
-
+        '400':
+          description: Bad request. Invalid keyword provided.
+        '500':
+          description: Internal server error.
+    servers:
+      - url: https://localhost:3000
+        description: Development server
+      - url: https://geek-quote-api.vercel.app
+        description: Production server
+  
 components:
   schemas:
     Quote:
@@ -166,5 +214,9 @@ components:
       properties:
         quote:
           type: string
+          description: The quote text.
+          example: "The greatest glory in living lies not in never falling, but in rising every time we fall."
         author:
           type: string
+          description: The author of the quote.
+          example: Nelson Mandela

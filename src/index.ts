@@ -21,6 +21,7 @@ class lanaDocCLI {
   themesDirectory: string = path.join(__dirname, '../themes'); // themes directory
   exclusionDirs: Array<string> = ["node_modules", ".git", ".github", "docs", ".gitignore", ".DS_Store", ".env"]; // Directories to exclude while indexing project
   openai: any; // openai api instance
+  docsDirName: string = "docs-beta"; // name of the docs directory
 
   // our constructor for our class
   constructor() {
@@ -227,7 +228,7 @@ class lanaDocCLI {
 
     // move the files to the docs directory
     const source = path.join(__dirname, '../themes', result.theme);
-    const destination = path.join(this.currentDirectory, 'docs-beta');
+    const destination = path.join(this.currentDirectory, this.docsDirName);
 
     try {
       await fs.copy(source, destination);
@@ -307,7 +308,7 @@ class lanaDocCLI {
     // TO DO
     // Validate the yaml file
      
-    const prompt = `Generate a yaml file api specification following the openAPI 3.0.0 standard 
+    const prompt = `Generate a valid yaml file api specification following the openAPI 3.0.0 standard 
     with this data. Add detailed user friendly explanations in descriptions of endpoints and good summaries.
      here is basic information about the api documenation:
     title: `+configFile.metaInfo.info.title+`,
@@ -318,7 +319,7 @@ class lanaDocCLI {
     license: `+JSON.stringify(configFile.metaInfo.info.license, null, 2)+`,
     servers: `+JSON.stringify(configFile.metaInfo.servers, null, 2)+`,
      here are all the endpoints` + routeStringContent +`\n\n\n and here are all 
-    the implementations: `+ implementationStringContent +"\n\n Extremely Important: don't include any explanations (DO NOT ADD ANY comments in the code) in your responses ";
+    the implementations: `+ implementationStringContent +"\n\n Extremely Important: don't include any explanations (DO NOT INCLUDE ANY comments in the code) in your responses ";
 
    // 3. submit the content to the LLM
     const completion = await this.openai.completions.create({
@@ -333,7 +334,7 @@ class lanaDocCLI {
 
 
    // 4. save the result to .yaml file at docs/public/resources/openapi-spec.yaml
-   const filePath = './docs/public/resource/openapi-spec.yaml';
+   const filePath = `./${this.docsDirName}/public/resource/openapi-spec.yaml`;
 
     // Ensure the directory exists
     const dirPath = path.dirname(filePath);
