@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 class lanaDocCLI {
   OPENAI_API_KEY: string; // api key gotten from open api
   currentDirectory: string = process.cwd(); // current working directory
-  themesDirectory: string = path.join(__dirname, '../themes'); // themes directory
+  themeChoices: Array<string> = ['alternate', 'default', 'moon', 'purple', 'solarized']; // theme choices
   exclusionDirs: Array<string> = ["node_modules", ".git", ".github", "docs", ".gitignore", ".DS_Store", ".env"]; // Directories to exclude while indexing project
   openai: any; // openai api instance
   docsDirName: string = "docs-beta"; // name of the docs directory
@@ -184,7 +184,7 @@ class lanaDocCLI {
   
     try {
       await fs.writeFile(configFilePath, configContent);
-      console.log(`lana.config.json file generated successfully in root directory.`);
+      console.log(`lana.config.json file generated successfully in ${this.docsDirName}/ directory.`);
     } catch (err) {
       console.error("Failed to create lana.config.json file:", err);
     }
@@ -205,34 +205,27 @@ class lanaDocCLI {
 
   // function to prompt dev to select a theme
   async selectTheme() {
-    // List all the files in the themes directory
-    const themeFiles = await this.listFilesInDirectory(this.themesDirectory);
-
-    // set the default theme to the second theme in the themes directory
-    let defaultTheme = "";
-    if (themeFiles.length >= 2) {
-      defaultTheme = themeFiles[1]; // Use the second file as the default team
-    }
-
+    // Prompt for theme selection
     const result = await inquirer.prompt([
       {
         type: "list",
         name: "theme",
         message: "Select a theme:",
-        choices: themeFiles,
-        default: defaultTheme, // Set the default theme
+        choices: this.themeChoices,
       },
     ]);
-    console.log(result.theme);
-    // console.log(path.join(__dirname, '../themes', result.theme));
+
+    // console.log(`You selected: ${result.theme}`);
 
     // move the files to the docs directory
-    const source = path.join(__dirname, '../themes', result.theme);
+    // will be moving all the files in the theme directory
+    const source = path.join(__dirname, '../theme');
+    // to destination directory
     const destination = path.join(this.currentDirectory, this.docsDirName);
 
     try {
       await fs.copy(source, destination);
-      console.log(`Successfuly initialized docs with '${result.theme}' theme in docs-beta/ directory.`)
+      console.log(`Successfuly initialized docs with '${result.theme}' theme in ${this.docsDirName}/ directory.`)
     } catch (err) {
       console.error("Failed to initialized docs:", err);
     }
@@ -330,6 +323,7 @@ class lanaDocCLI {
      here are all the endpoints` + routeStringContent +`\n\n\n and here are all 
     the implementations: `+ implementationStringContent +"\n\n Extremely Important: don't include any explanations (DO NOT INCLUDE ANY comments in the code) in your responses ";
 
+   console.log("🛠 Generating OpenAPI spec, Please standby...");
    // 3. submit the content to the LLM
     const completion = await this.openai.completions.create({
         model: "gpt-3.5-turbo-instruct",
@@ -339,7 +333,7 @@ class lanaDocCLI {
 
     // Handle the response from LLM 
     const generatedContent = completion.choices[0].text; // Extract the generated content
-    console.log(generatedContent);
+    console.log("✅ Completed!");
 
 
    // 4. save the result to .yaml file at docs/public/resources/openapi-spec.yaml
@@ -379,8 +373,8 @@ async runInitCommand() {
     // we initialize the lana.config.json file
     await this.generateLanaConfigFile();
     console.log('✅ Done initializing... \n\n');
-    console.log('Now run "lanadoc generate" to generate the docs reference file\n\n');
-    console.log('...and cd to docs/ \n\n');
+    console.log(`Now cd to ${this.docsDirName}/ \n\n`);
+    console.log('Run "lanadoc generate" to generate the docs reference file\n\n');
     console.log('Run "npm run serve" to start the doc server\n\n');
   }
 
