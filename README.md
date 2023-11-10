@@ -32,7 +32,7 @@ Use the following command to create a new lanadoc-cli project:
 lanadoc init
 ```
 
-This command initializes your project and generates a `lana.config.ts` file in docs/ directory. This file contains essential meta info about your API doc and some customization like theme.
+This command initializes your project and generates a `lana.config.json` file in docs/ directory. This file contains essential meta info about your API doc and some customization like theme.
 
 Available themes: ```'alternate' | 'default' | 'moon' | 'purple' | 'solarized' ```
 
