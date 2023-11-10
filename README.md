@@ -40,6 +40,9 @@ Available themes: ```'alternate' | 'default' | 'moon' | 'purple' | 'solarized' `
 
 Once your project is initialized, `cd` to docs/ directory and generate documentation with:
 
+**Please make sure you have added your openai api key in your `.env` file as seen in the `.env_example` file.
+**
+
 ```bash
 lanadoc generate
 ```
