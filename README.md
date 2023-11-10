@@ -49,7 +49,7 @@ This command processes your source code etc, turning your code into comprehensiv
 **🚨Important Note:** routes files and implementation to your endpoints are required in your `lana.config.json` to be able to generate the doc spec.
 
 **Example**:
-```json
+```js
 // other configs
  "sourcePaths": {
     "routes": ["./routes/quote_route.js"],
